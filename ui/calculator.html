@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .calculator-container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .calculator-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .calculator-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .display {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-align: right;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .display:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .display.error {
+            color: #ff6b6b;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            height: 65px;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-number {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-number:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-operator {
+            background: rgba(255, 159, 10, 0.2);
+        }
+
+        .btn-operator:hover {
+            background: rgba(255, 159, 10, 0.3);
+        }
+
+        .btn-function {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .btn-function:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-equals {
+            background: rgba(46, 204, 113, 0.2);
+            grid-column: span 2;
+        }
+
+        .btn-equals:hover {
+            background: rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-clear {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        .btn-clear:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        .history {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-expression {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .history-result {
+            color: #2ecc71;
+            float: right;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .calculator-container {
+                padding: 20px;
+            }
+            
+            .display {
+                height: 70px;
+                font-size: 28px;
+            }
+            
+            .btn {
+                height: 55px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1 class="calculator-title">Professional Calculator</h1>
+            <p class="calculator-subtitle">Advanced Mathematical Operations</p>
+        </div>
+        
+        <input type="text" class="display" id="display" placeholder="0" readonly>
+        
+        <div class="buttons-grid">
+            <button class="btn btn-clear" onclick="clearDisplay()">C</button>
+            <button class="btn btn-function" onclick="backspace()">⌫</button>
+            <button class="btn btn-function" onclick="appendValue('(')">(</button>
+            <button class="btn btn-function" onclick="appendValue(')')">)</button>
+            
+            <button class="btn btn-function" onclick="appendValue('sqrt(')">√</button>
+            <button class="btn btn-number" onclick="appendValue('7')">7</button>
+            <button class="btn btn-number" onclick="appendValue('8')">8</button>
+            <button class="btn btn-number" onclick="appendValue('9')">9</button>
+            
+            <button class="btn btn-function" onclick="appendValue('^')">^</button>
+            <button class="btn btn-number" onclick="appendValue('4')">4</button>
+            <button class="btn btn-number" onclick="appendValue('5')">5</button>
+            <button class="btn btn-number" onclick="appendValue('6')">6</button>
+            
+            <button class="btn btn-operator" onclick="appendValue('*')">×</button>
+            <button class="btn btn-number" onclick="appendValue('1')">1</button>
+            <button class="btn btn-number" onclick="appendValue('2')">2</button>
+            <button class="btn btn-number" onclick="appendValue('3')">3</button>
+            
+            <button class="btn btn-operator" onclick="appendValue('/')">÷</button>
+            <button class="btn btn-number" onclick="appendValue('0')">0</button>
+            <button class="btn btn-number" onclick="appendValue('.')">.</button>
+            <button class="btn btn-equals" onclick="calculateResult()">=</button>
+            
+            <button class="btn btn-operator" onclick="appendValue('+')">+</button>
+            <button class="btn btn-operator" onclick="appendValue('-')">-</button>
+        </div>
+        
+        <div class="history" id="history">
+            <h3>History</h3>
+            <!-- History items will be added here -->
+        </div>
+        
+        <div class="footer">
+            <p>Supports: +, -, *, /, ^, √(), (), decimals, and negative numbers</p>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '';
+        let history = [];
+        const historyMaxItems = 5;
+
+        const display = document.getElementById('display');
+        const historyDiv = document.getElementById('history');
+
+        function appendValue(value) {
+            currentInput += value;
+            display.value = currentInput;
+            display.classList.remove('error');
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            display.value = '';
+            display.classList.remove('error');
+        }
+
+        function backspace() {
+            currentInput = currentInput.slice(0, -1);
+            display.value = currentInput;
+            display.classList.remove('error');
+        }
+
+        async function calculateResult() {
+            if (!currentInput) return;
+            
+            try {
+                // Replace visual operators with actual operators for calculation
+                let expression = currentInput
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/√/g, 'sqrt');
+                
+                // Validate the expression for safe evaluation
+                validateExpression(expression);
+                
+                // Send to backend for calculation
+                const result = await calculateOnBackend(expression);
+                
+                // Add to history
+                addToHistory(expression, result);
+                
+                // Update display
+                display.value = result;
+                currentInput = result.toString();
+                display.classList.remove('error');
+            } catch (error) {
+                display.value = 'Error';
+                display.classList.add('error');
+                setTimeout(() => {
+                    display.classList.remove('error');
+                    display.value = currentInput;
+                }, 1500);
+            }
+        }
+
+        function validateExpression(expr) {
+            // Check for potentially dangerous characters or patterns
+            if (/[a-zA-Z]+\(.*\)/.test(expr) && !/(sqrt)/.test(expr)) {
+                // Only allow sqrt function
+                throw new Error('Invalid function');
+            }
+            
+            // Check for other potentially dangerous patterns
+            const dangerousPatterns = [
+                /eval|exec|setTimeout|setInterval|Function|import|require|__proto__|constructor/i
+            ];
+            
+            for (const pattern of dangerousPatterns) {
+                if (pattern.test(expr)) {
+                    throw new Error('Invalid characters');
+                }
+            }
+        }
+
+        // Make an API call to the Python backend
+        async function calculateOnBackend(expression) {
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ expression: expression })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    return data.result;
+                } else {
+                    throw new Error(data.error || 'Invalid expression');
+                }
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function addToHistory(expression, result) {
+            const historyItem = {
+                expression: expression,
+                result: result,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            history.unshift(historyItem);
+            if (history.length > historyMaxItems) {
+                history.pop();
+            }
+            
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            let historyHTML = '<h3>History</h3>';
+            history.forEach(item => {
+                historyHTML += `
+                    <div class="history-item">
+                        <span class="history-expression">${item.expression}</span>
+                        <span class="history-result">= ${item.result}</span>
+                        <div style="clear: both;"></div>
+                    </div>
+                `;
+            });
+            
+            historyDiv.innerHTML = historyHTML;
+        }
+
+        // Allow keyboard input
+        display.addEventListener('keydown', function(e) {
+            if (e.key >= '0' && e.key <= '9') {
+                appendValue(e.key);
+            } else if (['+', '-', '*', '/', '.', '(', ')'].includes(e.key)) {
+                appendValue(e.key);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                calculateResult();
+            } else if (e.key === 'Escape') {
+                clearDisplay();
+            } else if (e.key === 'Backspace') {
+                backspace();
+            } else if (e.key === '^') {
+                appendValue('^');
+            }
+        });
+
+        // Initialize
+        display.focus();
+    </script>
+</body>
+</html>
